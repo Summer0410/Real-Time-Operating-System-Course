@@ -12,8 +12,7 @@ struct course*	course_create(enum subject subject, uint16_t code){
     new_course.code = code;
     new_course.subject  = subject;
     new_course.refcount = 1;
-    struct course *course_pointer = &new_course;
-    return course_pointer;
+    return &new_course;
 };
 
 /** Retrieve a course's subject. */
@@ -46,7 +45,7 @@ int		course_refcount(const struct course* course){
 
 
 
-
+//Test cases for course
 int main(){
     struct course *course = course_create(SUBJ_PHYS,123);
     course_release(course);
