@@ -36,9 +36,14 @@ void		student_free(struct student* student){
  * the course that is passed in.
  */
 void		student_take(struct student *s, struct course *course, uint8_t grade){
-            s->course_taken[s->course_count][0] = course->code;
-            s->course_taken[s->course_count][1] = grade;
-            course_hold(course);
+            int old_grade  = student_grade(s, course);
+            if(old_grade == -1){//if the course has not been taken, added the course to the list
+                s->course_taken[s->course_count][0] = course->code;
+                s->course_taken[s->course_count][1] = grade;
+                course_hold(course);
+            }
+            else if(grade>old_grade)
+                    s->course_taken[s->course_count][1] = grade;       
 };
 
 
@@ -68,19 +73,25 @@ int		student_grade(struct student* s, struct course* course){
  * @returns     the average, or 0 if no courses have been passed
  */
 double		student_passed_average(const struct student* s){
-        // int sum = 0;
-        // int passed_course = 0;
-        // for (int i = 0; i< s->course_count; i++){
-        //     if (s->course_taken[i][1]>=50){
-        //         sum += s->course_taken[i][1]>=50;
-        //         passed_course ++;
-        //     }
-        // }
-        // double average = sum/passed_course;
-        // if(average>=60)
-        //     return average;
-        // else
-        //     return 0;     
+        double sum = 0;
+        int passed_course = 0;
+        if (s->grad == 0){
+            for (int i = 0; i< s->course_count; i++){
+            if (s->course_taken[i][1]>=50){
+                sum += s->course_taken[i][1];
+                passed_course ++;
+            }
+        }
+    }
+        else{
+            for (int i = 0; i< s->course_count; i++){
+            if (s->course_taken[i][1]>=65){
+                sum += s->course_taken[i][1];
+                passed_course ++;
+            }
+        } 
+    }
+        return sum/passed_course;       
 }
 
 /**
@@ -95,6 +106,24 @@ double		student_passed_average(const struct student* s){
  * of all courses is at least 60%.
  */
 bool		student_promotable(const struct student* s){
-            double average = stu
-
+    
+    if(s->grad == 0){
+        int failed = 0;
+        for(int i = 0; i<s->course_count; i++){
+            if (s->course_taken[i][1]<65)
+                failed++;
+            if (failed>1)
+                return false;
+        }
+    }
+    else{
+        double sum, average = 0;
+        for(int i = 0; i<s->course_count; i++){
+            sum += s->course_taken[i][1];
+            average = sum/s->course_count;
+        }
+        if(average<60)
+            return false;
+    }
+    return true;
 }

@@ -42,15 +42,3 @@ int		course_refcount(const struct course* course){
     printf("\n%d\n", course->refcount);
     return course->refcount;
 }
-
-
-
-//Test cases for course
-int main(){
-    struct course *course = course_create(SUBJ_PHYS,123);
-    course_release(course);
-    course_refcount(course);
-    course_hold(course);
-    course_refcount(course);
-    return 0;
-}
