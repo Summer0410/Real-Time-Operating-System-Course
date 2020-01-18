@@ -1,5 +1,6 @@
 #include "course.h"
 #include "stdio.h"
+#include "stdlib.h"
 
  struct course{
     enum subject subject;
@@ -8,11 +9,11 @@
 };
 
 struct course*	course_create(enum subject subject, uint16_t code){
-    struct course new_course;
-    new_course.code = code;
-    new_course.subject  = subject;
-    new_course.refcount = 1;
-    return &new_course;
+    struct course * course_ptr = (struct course *)malloc(sizeof(struct course));
+    course_ptr->code = code;
+    course_ptr->subject  = subject;
+    course_ptr->refcount = 1;
+    return course_ptr;
 };
 
 /** Retrieve a course's subject. */
@@ -30,15 +31,18 @@ uint16_t	course_code(const struct course* course){
 /** Increment a course's refcount. */
 void		course_hold(struct course* course){
     (course->refcount)++;
+    printf("\n%d\n", course->refcount);
 }
 
 /** Decrement a course's refcount (optionally freeing it). */
 void		course_release(struct course* course){
     (course->refcount)--;
-}
-;
+    printf("\n%d\n", course->refcount);
+};
 /** Retrieve the current reference count of a course. */
 int		course_refcount(const struct course* course){
     printf("\n%d\n", course->refcount);
     return course->refcount;
 }
+
+

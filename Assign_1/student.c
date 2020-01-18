@@ -1,5 +1,6 @@
 #include "student.h"
 #include "course.h"
+#include "stdio.h"
 
 // /** Opaque type representing a student. */
 struct student{
@@ -15,17 +16,23 @@ struct student{
     int refcount;
 };
 struct student*	student_create(struct student_id id, bool grad_student){
-    struct student new_student;
-    new_student.grad = grad_student;
-    new_student.id = id;
-    new_student.course_count = 0;
-    return &new_student;
+    struct student * student_ptr =   (struct student *)malloc(sizeof(struct student));
+    student_ptr->grad = grad_student;
+    student_ptr->id = id;
+    student_ptr->course_count = 0;
+    for(int i = 0; i<100; i++){
+        for(int j=0;j<2;j++){
+            student_ptr->course_taken[i][j] = 0;
+        }
+    }
+    return student_ptr;
 };
 
 /**
  * Release a student object.
  */
 void		student_free(struct student* student){
+    // course_release()
     free(student);
 };
 
@@ -37,6 +44,7 @@ void		student_free(struct student* student){
  */
 void		student_take(struct student *s, struct course *course, uint8_t grade){
             int old_grade  = student_grade(s, course);
+            printf("%d\n",old_grade);
             if(old_grade == -1){//if the course has not been taken, added the course to the list
                 s->course_taken[s->course_count][0] = course->code;
                 s->course_taken[s->course_count][1] = grade;
@@ -56,7 +64,11 @@ void		student_take(struct student *s, struct course *course, uint8_t grade){
  * @returns    a grade, or -1 if the student has not taken the course
  */
 int		student_grade(struct student* s, struct course* course){
+        printf("%d\n",s->course_count);
         for (int i = 0; i< s->course_count; i++){
+            // printf("%d\n",grade);
+            // printf("%d\n",grade);
+
             if (s->course_taken[i][0] == course->code){
                 return s->course_taken[i][1];
             }
@@ -127,3 +139,4 @@ bool		student_promotable(const struct student* s){
     }
     return true;
 }
+
