@@ -6,6 +6,7 @@
     enum subject subject;
     uint16_t code;
     uint8_t refcount;
+    int grade;
 };
 
 struct course*	course_create(enum subject subject, uint16_t code){
@@ -13,6 +14,7 @@ struct course*	course_create(enum subject subject, uint16_t code){
     course_ptr->code = code;
     course_ptr->subject  = subject;
     course_ptr->refcount = 1;
+    course_ptr->grade = 0;
     return course_ptr;
 };
 
@@ -31,7 +33,7 @@ uint16_t	course_code(const struct course* course){
 /** Increment a course's refcount. */
 void		course_hold(struct course* course){
     (course->refcount)++;
-    printf("\n%d\n", course->refcount);
+    //printf("\n%d\n", course->refcount);
 }
 
 /** Decrement a course's refcount (optionally freeing it). */

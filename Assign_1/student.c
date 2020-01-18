@@ -6,33 +6,27 @@
 struct student{
     struct student_id id;
     bool grad;
-    int course_taken [100][2];
+    int *course_ptr[20];
     int course_count;
 };
 
  struct course{
     enum subject subject;
     uint16_t code;
-    int refcount;
+    int grade;
 };
 struct student*	student_create(struct student_id id, bool grad_student){
     struct student * student_ptr =   (struct student *)malloc(sizeof(struct student));
     student_ptr->grad = grad_student;
     student_ptr->id = id;
     student_ptr->course_count = 0;
-    for(int i = 0; i<100; i++){
-        for(int j=0;j<2;j++){
-            student_ptr->course_taken[i][j] = 0;
-        }
-    }
     return student_ptr;
 };
 
 /**
  * Release a student object.
  */
-void		student_free(struct student* student){
-    // course_release()
+void student_free(struct student* student){
     free(student);
 };
 
@@ -42,16 +36,22 @@ void		student_free(struct student* student){
  * This student will now take a reference to (i.e., increment the refcount of)
  * the course that is passed in.
  */
-void		student_take(struct student *s, struct course *course, uint8_t grade){
-            int old_grade  = student_grade(s, course);
-            printf("%d\n",old_grade);
-            if(old_grade == -1){//if the course has not been taken, added the course to the list
-                s->course_taken[s->course_count][0] = course->code;
-                s->course_taken[s->course_count][1] = grade;
-                course_hold(course);
+void    student_take(struct student *s, struct course *course, uint8_t grade){
+            bool found_course = false;
+            for(int i = 0; i< s->course_count; i++){
+                struct course * current_course_ptr = (s->course_ptr)[i];
+                if(current_course_ptr->code == course->code && current_course_ptr->subject == course->subject){
+                    found_course = true;
+                    current_course_ptr->grade = grade;
+                }       
+            } 
+            if(found_course == false){
+                struct course * added_course_ptr = course_create(course->subject, course->code);
+                added_course_ptr->grade = grade;
+                (s->course_ptr)[s->course_count] = added_course_ptr;
+                (s->course_count)++;
             }
-            else if(grade>old_grade)
-                    s->course_taken[s->course_count][1] = grade;       
+            course_hold(course);
 };
 
 
@@ -63,17 +63,15 @@ void		student_take(struct student *s, struct course *course, uint8_t grade){
  *
  * @returns    a grade, or -1 if the student has not taken the course
  */
-int		student_grade(struct student* s, struct course* course){
-        printf("%d\n",s->course_count);
-        for (int i = 0; i< s->course_count; i++){
-            // printf("%d\n",grade);
-            // printf("%d\n",grade);
-
-            if (s->course_taken[i][0] == course->code){
-                return s->course_taken[i][1];
-            }
-        }
-        return -1;
+int     student_grade(struct student* s, struct course* course){
+            for(int i = 0; i< s->course_count; i++){
+                struct course * current_course_ptr = (s->course_ptr)[i];
+                if(current_course_ptr->code == course->code && current_course_ptr->subject == course->subject){
+                    printf("%d\n",current_course_ptr->grade);
+                    return current_course_ptr->grade;
+                }       
+            }  
+            return -1;     
 }
 
 /**
@@ -85,25 +83,37 @@ int		student_grade(struct student* s, struct course* course){
  * @returns     the average, or 0 if no courses have been passed
  */
 double		student_passed_average(const struct student* s){
-        double sum = 0;
         int passed_course = 0;
-        if (s->grad == 0){
-            for (int i = 0; i< s->course_count; i++){
-            if (s->course_taken[i][1]>=50){
-                sum += s->course_taken[i][1];
-                passed_course ++;
-            }
+        int sum = 0;
+        if(s->course_count == 0){
+            return 0;
         }
-    }
         else{
-            for (int i = 0; i< s->course_count; i++){
-            if (s->course_taken[i][1]>=65){
-                sum += s->course_taken[i][1];
-                passed_course ++;
+            if (s->grad == 0){//Undergrads
+                for (int i = 0; i< s->course_count; i++){
+                    struct course * current_course_ptr = (s->course_ptr)[i];
+                    if (current_course_ptr->grade>=50){
+                        sum += (current_course_ptr->grade);
+                        passed_course ++;
+                }
             }
-        } 
+            printf("%d\n", sum);
+            printf("%d\n", passed_course);
+            printf("%d", sum/passed_course);
+            return sum/passed_course;
+        }
+            else{//grades
+                for (int i = 0; i< s->course_count; i++){
+                    printf("%s", "hello");
+                struct course * current_course_ptr = (s->course_ptr)[i];
+                    if (current_course_ptr->grade>=65){
+                        sum += current_course_ptr->grade;
+                        passed_course ++;
+                } 
+            }     
+        }
+         return sum/passed_course; 
     }
-        return sum/passed_course;       
 }
 
 /**
@@ -122,7 +132,8 @@ bool		student_promotable(const struct student* s){
     if(s->grad == 0){
         int failed = 0;
         for(int i = 0; i<s->course_count; i++){
-            if (s->course_taken[i][1]<65)
+            struct course * current_course_ptr = (s->course_ptr)[i];
+            if (current_course_ptr->grade<65)
                 failed++;
             if (failed>1)
                 return false;
@@ -131,7 +142,8 @@ bool		student_promotable(const struct student* s){
     else{
         double sum, average = 0;
         for(int i = 0; i<s->course_count; i++){
-            sum += s->course_taken[i][1];
+            struct course * current_course_ptr = (s->course_ptr)[i];
+            sum += current_course_ptr->grade;
             average = sum/s->course_count;
         }
         if(average<60)

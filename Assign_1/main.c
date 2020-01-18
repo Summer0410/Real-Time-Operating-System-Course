@@ -10,9 +10,12 @@ int main(){
     struct course *course1 = course_create(SUBJ_MATH,1000);
     struct course *course2 = course_create(SUBJ_PHYS,1001);
     struct student *student1 = student_create(id, false);
-    course_code(course1);
-    course_subject(course1);
-    course_code(course2);
-    course_subject(course2);
+    // course_code(course1);
+    // course_subject(course1);
+    // course_code(course2);
+    // course_subject(course2);
+    student_take(student1,course1,61);
+    //student_take(student1,course2,65);
+    student_passed_average(student1);
     return 0;
 }
