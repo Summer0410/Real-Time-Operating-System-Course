@@ -68,7 +68,6 @@ int     student_grade(struct student* s, struct course* course){
             for(int i = 0; i< s->course_count; i++){
                 struct course * current_course_ptr = (s->course_ptr)[i];
                 if(current_course_ptr->code == course->code && current_course_ptr->subject == course->subject){
-                    printf("%d\n",current_course_ptr->grade);
                     return current_course_ptr->grade;
                 }       
             }  
@@ -84,9 +83,9 @@ int     student_grade(struct student* s, struct course* course){
  * @returns     the average, or 0 if no courses have been passed
  */
 double		student_passed_average(const struct student* s){
-        printf("hello\n");
         int passed_course = 0;
-        int sum = 0;
+        int sum  = 0;
+        double average;
         if(s->course_count == 0){
             return 0;
         }
@@ -99,13 +98,9 @@ double		student_passed_average(const struct student* s){
                         passed_course ++;
                 }
             }
-            // printf("%d\n", sum);
-            // printf("%d\n", passed_course);
-            // printf("%d", sum/passed_course);
         }
             else{//grades
                 for (int i = 0; i< s->course_count; i++){
-                    printf("%s", "hello");
                     struct course * current_course_ptr = (s->course_ptr)[i];
                     if (current_course_ptr->grade>=65){
                         sum += current_course_ptr->grade;
@@ -114,12 +109,13 @@ double		student_passed_average(const struct student* s){
             }     
         }
          if (passed_course>0){
-             printf("%d\n", sum/passed_course);
-                return sum/passed_course;
+            average = (double)sum/passed_course;
+            printf("%d\n",passed_course);
+            printf("the average is: %.2f ", (double)sum/passed_course);
+            return (double)sum/passed_course;
          }
                 
             else{
-                printf("%d\n", 0);
                 return 0;
             }
                 
@@ -139,7 +135,7 @@ double		student_passed_average(const struct student* s){
  */
 bool		student_promotable(const struct student* s){
     
-    if(s->grad == 0){
+    if(s->grad == 1){
         int failed = 0;
         for(int i = 0; i<s->course_count; i++){
             struct course * current_course_ptr = (s->course_ptr)[i];
@@ -150,14 +146,14 @@ bool		student_promotable(const struct student* s){
         }
     }
     else{
-        double sum, average = 0;
+        double sum = 0;
         for(int i = 0; i<s->course_count; i++){
             struct course * current_course_ptr = (s->course_ptr)[i];
-            sum += current_course_ptr->grade;
-            average = sum/s->course_count;
+            sum += (current_course_ptr->grade);
         }
-        if(average<60)
+        if(sum/(s->course_count)<60)
             return false;
+            
     }
     return true;
 }

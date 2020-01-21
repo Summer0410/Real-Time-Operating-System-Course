@@ -7,17 +7,16 @@ int main(){
     id.sid_serial = 0001;
     id.sid_year = 2020;
   
-    struct course *course1 = course_create(SUBJ_MATH,1000);
+    struct course *course1 = course_create(SUBJ_ECE,1020);
     struct course *course2 = course_create(SUBJ_PHYS,1001);
-    //struct student *student1 = student_create(id, false);
-    struct student *student1 = student_create(id, true);
-    // course_code(course1);
-    // course_subject(course1);
-    // course_code(course2);
-    // course_subject(course2);
-    student_take(student1,course1,49);
-    student_take(student1,course2,65);
-    //student_passed_average(student1);
-    student_passed_average(student1);
+    struct course *course3 = course_create(SUBJ_CIV,1001);
+    struct course *course4 = course_create(SUBJ_PHYS,1000);
+    struct student *student1 = student_create(id, false);
+    student_take(student1,course1,99);
+    student_take(student1,course2,89);
+    student_take(student1,course3,50);
+    student_take(student1,course4,49);
+    double result = student_passed_average(student1);
+    printf("%.2f\n", result);
     return 0;
 }
