@@ -13,10 +13,10 @@ int main(){
     struct course *course4 = course_create(SUBJ_PHYS,1000);
     struct student *student1 = student_create(id, false);
     student_take(student1,course1,99);
-    student_take(student1,course2,89);
-    student_take(student1,course3,50);
-    student_take(student1,course4,49);
-    double result = student_passed_average(student1);
-    printf("%.2f\n", result);
+    student_take(student1,course1,89);
+    student_take(student1,course1,50);
+    student_take(student1,course1,50);
+    student_free(student1);
+    course_refcount(course1);
     return 0;
 }

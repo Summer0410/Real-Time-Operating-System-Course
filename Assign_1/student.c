@@ -8,6 +8,7 @@ struct student{
     struct student_id id;
     bool grad;
     int *course_ptr[20];
+    int *course_catalog_ptr[20];
     int course_count;
 };
 
@@ -16,6 +17,7 @@ struct student{
     uint16_t code;
     int grade;
 };
+
 struct student*	student_create(struct student_id id, bool grad_student){
     struct student * student_ptr =   (struct student *)malloc(sizeof(struct student));
     student_ptr->grad = grad_student;
@@ -28,6 +30,11 @@ struct student*	student_create(struct student_id id, bool grad_student){
  * Release a student object.
  */
 void student_free(struct student* student){
+    int * current_ptr;
+    for(int i = 0; i<(student->course_count); i++){
+        current_ptr = (student->course_catalog_ptr)[i];
+        course_release(current_ptr);
+    }
     free(student);
 };
 
@@ -38,20 +45,11 @@ void student_free(struct student* student){
  * the course that is passed in.
  */
 void    student_take(struct student *s, struct course *course, uint8_t grade){
-            bool found_course = false;
-            for(int i = 0; i< s->course_count; i++){
-                struct course * current_course_ptr = (s->course_ptr)[i];
-                if(current_course_ptr->code == course->code && current_course_ptr->subject == course->subject){
-                    found_course = true;
-                    current_course_ptr->grade = grade;
-                }       
-            } 
-            if(found_course == false){
-                struct course * added_course_ptr = course_create(course->subject, course->code);
-                added_course_ptr->grade = grade;
-                (s->course_ptr)[s->course_count] = added_course_ptr;
-                (s->course_count)++;
-            }
+            struct course * added_course_ptr = course_create(course->subject, course->code);
+            added_course_ptr->grade = grade;
+            (s->course_ptr)[s->course_count] = added_course_ptr;
+            (s->course_catalog_ptr)[s->course_count] = course;
+            (s->course_count)++;
             course_hold(course);
 };
 
@@ -65,13 +63,13 @@ void    student_take(struct student *s, struct course *course, uint8_t grade){
  * @returns    a grade, or -1 if the student has not taken the course
  */
 int     student_grade(struct student* s, struct course* course){
+            int latest_grade = -1;
             for(int i = 0; i< s->course_count; i++){
                 struct course * current_course_ptr = (s->course_ptr)[i];
-                if(current_course_ptr->code == course->code && current_course_ptr->subject == course->subject){
-                    return current_course_ptr->grade;
-                }       
-            }  
-            return -1;     
+                if(current_course_ptr->code == course->code && current_course_ptr->subject == course->subject)
+                    latest_grade = current_course_ptr->grade;     
+                }  
+            return latest_grade;     
 }
 
 /**
@@ -110,31 +108,17 @@ double		student_passed_average(const struct student* s){
         }
          if (passed_course>0){
             average = (double)sum/passed_course;
-            printf("%d\n",passed_course);
-            printf("the average is: %.2f ", (double)sum/passed_course);
             return (double)sum/passed_course;
          }
                 
-            else{
-                return 0;
-            }
-                
+        else{
+            return 0;
+        }          
     }
 }
 
-/**
- * Determine whether or not this student is promotable.
- *
- * (note: this is not how promotion really works... simplified for assignment)
- *
- * For graduate students, determine whether they have passed all of their
- * courses apart from (up to) one.
- *
- * For undergraduate students, determine whether or not the cumulative average
- * of all courses is at least 60%.
- */
+
 bool		student_promotable(const struct student* s){
-    
     if(s->grad == 1){
         int failed = 0;
         for(int i = 0; i<s->course_count; i++){
