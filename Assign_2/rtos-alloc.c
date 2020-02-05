@@ -1,7 +1,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
-
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h> 
+#include <fcntl.h>
+#include "rtos-alloc.h"
 /*
  * This macro expands to `extern "C" {` when compiling with C++ (e.g., when
  * compiling test code that includes this header file) and expands to nothing
@@ -20,7 +23,8 @@ __BEGIN_DECLS
  * as `malloc(3)` would.
  */
 void*	rtos_malloc(size_t size){
-    
+        void *addr = mmap(NULL, size, PROT_READ,MAP_SHARED,0,0);
+        return addr;
 }
 
 /**
@@ -72,3 +76,9 @@ size_t	rtos_total_allocated(void);
  * and expands to nothing otherwise.
  */
 __END_DECLS
+
+
+
+
+
+
