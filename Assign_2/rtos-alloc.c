@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h> 
 #include <fcntl.h>
-#include "rtos-alloc.h"
+#include <rtos-alloc.h>
 /*
  * This macro expands to `extern "C" {` when compiling with C++ (e.g., when
  * compiling test code that includes this header file) and expands to nothing
@@ -23,7 +23,7 @@ __BEGIN_DECLS
  * as `malloc(3)` would.
  */
 void*	rtos_malloc(size_t size){
-        void *addr = mmap(NULL, size, PROT_READ,MAP_SHARED,0,0);
+        void *addr = mmap(NULL, size, PROT_READ,MAP_SHARED,-1,0);
         return addr;
 }
 
@@ -31,13 +31,18 @@ void*	rtos_malloc(size_t size){
  * Change the size of the allocation starting at @b ptr to be @b size bytes,
  * as `realloc(3)` would.
  */
-void*	rtos_realloc(void *ptr, size_t size);
+void*	rtos_realloc(void *ptr, size_t size){
+        void *addr = mmap(NULL, size, PROT_READ,MAP_SHARED,0,0);
+        return addr;
+}
 
 /**
  * Release the memory allocation starting at @b ptr for general use,
  * as `free(3)` would.
  */
-void	rtos_free(void *ptr);
+void	rtos_free(void *ptr){
+        void *addr = mmap(NULL, ptr, PROT_READ,MAP_SHARED,0,0);
+}
 
 
 /*
@@ -50,7 +55,9 @@ void	rtos_free(void *ptr);
  *
  * @pre   @b ptr points at a valid allocation (according to `rtos_allocated`)
  */
-size_t	rtos_alloc_size(void *ptr);
+size_t	rtos_alloc_size(void *ptr){
+        return 0;
+}
 
 /**
  * Does this pointer point at the beginning of a valid allocation?
@@ -60,7 +67,9 @@ size_t	rtos_alloc_size(void *ptr);
  * @returns whether or not @b ptr is a currently-allocated address returned
  *          from @b my_{m,re}alloc
  */
-bool	rtos_allocated(void *ptr);
+bool	rtos_allocated(void *ptr){
+        return false;
+}
 
 /**
  * How much memory has been allocated by this allocator?
@@ -68,9 +77,13 @@ bool	rtos_allocated(void *ptr);
  * @returns the number of bytes that have been allocated to user code,
  *          **not** including any allocator overhead
  */
-size_t	rtos_total_allocated(void);
+size_t	rtos_total_allocated(void){
+        return 0;
+}
 
-
+bool rtos_is_valid(void *ptr){
+        return true;
+}
 /*
  * This macro expands to `}` to close the `extern "C"` block when compiling C++
  * and expands to nothing otherwise.
