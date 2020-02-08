@@ -85,4 +85,13 @@ size_t	rtos_total_allocated(void);
  * This macro expands to `}` to close the `extern "C"` block when compiling C++
  * and expands to nothing otherwise.
  */
+
+bool rtos_is_valid(void *ptr);
+
+
+void alloc_print_all(); 
+
+
+
+
 __END_DECLS
