@@ -9,14 +9,14 @@
 #include <sys/wait.h>
 #include <readline/history.h>
 int main(int argc, char* agrv[]){
-char *userInput; 
+// char *userInput; 
 while (1){
     char **command_list;
     char *userInput[100], *file_path;
     file_path = NULL;
     printf("%s","Lin's shell>>");
-    scanf("%s", userInput);
-    printf("User input in main %s\n",userInput);
+    // scanf("%s", userInput);
+    gets(userInput);
     command_list = get_input(userInput);
     if (get_command(command_list[0])==NULL)
         printf("%s\n", "Command not found");
@@ -100,4 +100,5 @@ void run_command(char* command, char** command_list){
         wpid = waitpid(pid, &status, WUNTRACED);
         }   
     } 
+
 
