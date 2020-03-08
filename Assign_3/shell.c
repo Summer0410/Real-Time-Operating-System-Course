@@ -11,39 +11,50 @@
 #include <signal.h>
 #define DATA_SIZE 100
 int main(int argc, char* agrv[]){ 
+    remove("./history.txt");
     while (1){
         char **command_list;
-        char *userInput[100], *file_path;
-        file_path = NULL;
+        char *userInput[100];
+        char *file_path = NULL;
         printf("%s","Lin's shell>>");
         gets(userInput);//Get user input from the command line
-
+        char *input_string = malloc(100);
+        strcpy(input_string,userInput);
+        command_list = get_input(userInput);
         if(strcmp(userInput, "history")==0){
-            printf("%s", "Came to history");
-            //history();
+            store_history(userInput);
+            history();
         }     
-        else if(strcmp(userInput, "control_c")==0)
+        else if(strcmp(userInput, "control_c")==0){
             control_c();
-        else if(strcmp(userInput, "control_z")==0)
+            store_history(userInput);        
+        }
+        else if(strcmp(userInput, "control_z")==0){
+            store_history(userInput);
             control_z();
+        }
+        else if(strcmp(userInput, "redirect")==0){
+            store_history(userInput);
+            redirect();
+        }
         else{
-            command_list = get_input(userInput);
             if (get_command(command_list[0])==NULL)
                 printf("%s\n", "Command not found");
             else{
-                store_history(userInput);
+                // printf("Input_string before call store_history: %s", input_string);
+                store_history(input_string);
                 command_list[0] = get_command(command_list[0]);
                 run_command(command_list[0], command_list);
                 }
-        }    
-    }
-remove("./history.txt");
-return 0;
+            }   
+        }
+    remove("./history.txt");
+    return 0;
 }
 
 char *get_command(char* command){
-    char *string,*found;
-    string = getenv("PATH");
+    char *found;
+    char *string = getenv("PATH");
     char *path = malloc(strlen(string));
     strcpy(path, string);
     char *final_command = NULL;
@@ -61,6 +72,7 @@ char *get_command(char* command){
     }
     return final_command;
 }
+
 bool file_exist(char *file_path){
     struct stat buffer;
     int exist = stat(file_path,&buffer);
@@ -72,18 +84,18 @@ bool file_exist(char *file_path){
 }
 
 char **get_input(char *input) {
-    char **command = malloc(8 * sizeof(char *));
+    char **command_list = malloc(8 * sizeof(char *));
     char *separator = " ";
     char *parsed;
     int index = 0;
     parsed = strtok(input, separator);
     while (parsed != NULL) {
-        command[index] = parsed;
+        command_list[index] = parsed;
         index++;
         parsed = strtok(NULL, separator);
     }
-    command[index] = NULL;
-    return command;
+    command_list[index] = NULL;
+    return command_list;
 }
 
 void run_command(char* command, char** command_list){
@@ -98,8 +110,17 @@ void run_command(char* command, char** command_list){
         }   
     } 
 
-void history(char* history){
-     printf("%s\n", "History");
+void history( ){
+      FILE *fp = fopen("history.txt", "r");
+      if(fp == NULL) {
+          perror("Unable to open file!");
+          exit(1);
+      }
+      char chunk[128];
+    while(fgets(chunk, sizeof(chunk), fp) != NULL) {
+         fputs(chunk, stdout); // marker string used to show where the content of the chunk array has ended
+     }
+     fclose(fp);
 }
 
 void control_c(){
@@ -113,6 +134,7 @@ void redirect(){
 void control_z(){
     printf("%s\n", "control_z");
 }
+
 void store_history(char* user_command){
     char data[DATA_SIZE];/* Variable to store user command*/
     FILE * fPtr; /* File pointer to hold reference to our file */
@@ -121,9 +143,9 @@ void store_history(char* user_command){
     {
         printf("Unable to history.txt.\n");/* File not created hence exit */
     }
-    printf("User Command: %s", user_command);
-    fputs("\n",fPtr);
-    fputs (user_command,fPtr);
+    // printf ("user_command: %s\n", user_command);
+    fprintf (fPtr, "%s", user_command);
+    fprintf(fPtr, "\n");
     fclose(fPtr);
 }
 
