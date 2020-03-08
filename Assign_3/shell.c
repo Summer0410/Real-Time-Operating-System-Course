@@ -8,28 +8,37 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <readline/history.h>
-int main(int argc, char* agrv[]){
-// char *userInput; 
-while (1){
-    char **command_list;
-    char *userInput[100], *file_path;
-    file_path = NULL;
-    printf("%s","Lin's shell>>");
-    // scanf("%s", userInput);
-    gets(userInput);
-    command_list = get_input(userInput);
-    if (get_command(command_list[0])==NULL)
-        printf("%s\n", "Command not found");
-    else{
-        command_list[0] = get_command(command_list[0]);
-        printf("%s\n", command_list[0]);
-        run_command(command_list[0], command_list);
+#include <signal.h>
+#define DATA_SIZE 100
+int main(int argc, char* agrv[]){ 
+    while (1){
+        char **command_list;
+        char *userInput[100], *file_path;
+        file_path = NULL;
+        printf("%s","Lin's shell>>");
+        gets(userInput);//Get user input from the command line
+
+        if(strcmp(userInput, "history")==0){
+            printf("%s", "Came to history");
+            //history();
+        }     
+        else if(strcmp(userInput, "control_c")==0)
+            control_c();
+        else if(strcmp(userInput, "control_z")==0)
+            control_z();
+        else{
+            command_list = get_input(userInput);
+            if (get_command(command_list[0])==NULL)
+                printf("%s\n", "Command not found");
+            else{
+                store_history(userInput);
+                command_list[0] = get_command(command_list[0]);
+                run_command(command_list[0], command_list);
+                }
+        }    
     }
-
-
-}
-    
-    return 0;
+remove("./history.txt");
+return 0;
 }
 
 char *get_command(char* command){
@@ -55,20 +64,11 @@ char *get_command(char* command){
 bool file_exist(char *file_path){
     struct stat buffer;
     int exist = stat(file_path,&buffer);
-    //printf("exist %d\n", exist);
     if(exist == 0){
         return 1;
     }
     else 
         return 0;
-}
-
-char *string_concat(char* path, char* command){
-    char *original_path = (char *) malloc(100);
-    strcpy(original_path,path);
-    strcat(original_path,"/");
-    strcat(original_path, command);
-    return *original_path;
 }
 
 char **get_input(char *input) {
@@ -78,18 +78,15 @@ char **get_input(char *input) {
     int index = 0;
     parsed = strtok(input, separator);
     while (parsed != NULL) {
-        printf("Parsed %s\n", parsed);
         command[index] = parsed;
         index++;
         parsed = strtok(NULL, separator);
     }
-    printf("input 1 from get_input %s\n", command[1]);
     command[index] = NULL;
     return command;
 }
 
 void run_command(char* command, char** command_list){
-    //printf("exist %s\n", command[1]);
     pid_t pid, wpid;
     int status;
     pid = fork();
@@ -100,5 +97,35 @@ void run_command(char* command, char** command_list){
         wpid = waitpid(pid, &status, WUNTRACED);
         }   
     } 
+
+void history(char* history){
+     printf("%s\n", "History");
+}
+
+void control_c(){
+    printf("%s\n", "control_c");
+}
+
+void redirect(){
+    printf("%s\n", "redirect");
+}
+
+void control_z(){
+    printf("%s\n", "control_z");
+}
+void store_history(char* user_command){
+    char data[DATA_SIZE];/* Variable to store user command*/
+    FILE * fPtr; /* File pointer to hold reference to our file */
+    fPtr = fopen("./history.txt", "a");
+    if(fPtr == NULL)
+    {
+        printf("Unable to history.txt.\n");/* File not created hence exit */
+    }
+    printf("User Command: %s", user_command);
+    fputs("\n",fPtr);
+    fputs (user_command,fPtr);
+    fclose(fPtr);
+}
+
 
 

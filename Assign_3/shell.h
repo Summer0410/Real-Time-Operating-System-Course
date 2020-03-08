@@ -4,3 +4,8 @@ bool file_exist(char* file_path);
 char *string_concat(char* path, char* command);
 char **get_input(char *input);
 void run_command(char* command, char** command_list);
+int switch_map(char* input);
+void control_c();
+void control_z();
+void redirect();
+void store_history(char* user_command);
