@@ -9,3 +9,5 @@ void history();
 void control_c();
 void control_z();
 void redirect();
+void control_c_handler(int dummy);
+void control_z_handler(int dummy);

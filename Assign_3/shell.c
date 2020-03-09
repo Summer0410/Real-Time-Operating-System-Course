@@ -9,9 +9,12 @@
 #include <sys/wait.h>
 #include <readline/history.h>
 #include <signal.h>
-#define DATA_SIZE 100
+
+
 int main(int argc, char* agrv[]){ 
     remove("./history.txt");
+    signal(SIGINT, control_c_handler);
+    signal(SIGTSTP, control_z_handler);
     while (1){
         char **command_list;
         char *userInput[100];
@@ -24,15 +27,7 @@ int main(int argc, char* agrv[]){
         if(strcmp(userInput, "history")==0){
             store_history(userInput);
             history();
-        }     
-        else if(strcmp(userInput, "control_c")==0){
-            control_c();
-            store_history(userInput);        
-        }
-        else if(strcmp(userInput, "control_z")==0){
-            store_history(userInput);
-            control_z();
-        }
+    }     
         else if(strcmp(userInput, "redirect")==0){
             store_history(userInput);
             redirect();
@@ -41,14 +36,12 @@ int main(int argc, char* agrv[]){
             if (get_command(command_list[0])==NULL)
                 printf("%s\n", "Command not found");
             else{
-                // printf("Input_string before call store_history: %s", input_string);
-                store_history(input_string);
                 command_list[0] = get_command(command_list[0]);
                 run_command(command_list[0], command_list);
                 }
-            }   
+            } 
+        store_history(input_string);  
         }
-    remove("./history.txt");
     return 0;
 }
 
@@ -90,6 +83,7 @@ char **get_input(char *input) {
     int index = 0;
     parsed = strtok(input, separator);
     while (parsed != NULL) {
+        printf("%s\n", parsed);
         command_list[index] = parsed;
         index++;
         parsed = strtok(NULL, separator);
@@ -123,27 +117,29 @@ void history( ){
      fclose(fp);
 }
 
-void control_c(){
-    printf("%s\n", "control_c");
-}
-
-void redirect(){
+void redirect(char* userInput){
+    char** command_list = get_input(userInput);
+    char* final_command = get_command(command_list[0]);
+    
     printf("%s\n", "redirect");
 }
 
-void control_z(){
-    printf("%s\n", "control_z");
+void control_c_handler(int dummy){
+    printf("\n%s","Lin's shell>>");
+}
+
+void control_z_handler(int dummy){
+    printf("%s\n", "Contolz hit");
+
 }
 
 void store_history(char* user_command){
-    char data[DATA_SIZE];/* Variable to store user command*/
     FILE * fPtr; /* File pointer to hold reference to our file */
     fPtr = fopen("./history.txt", "a");
     if(fPtr == NULL)
     {
         printf("Unable to history.txt.\n");/* File not created hence exit */
     }
-    // printf ("user_command: %s\n", user_command);
     fprintf (fPtr, "%s", user_command);
     fprintf(fPtr, "\n");
     fclose(fPtr);
