@@ -1,3 +1,11 @@
+/*
+Imemented core function
+control c
+control z
+history
+redirect --  does not really work
+*/
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -9,12 +17,14 @@
 #include <sys/wait.h>
 #include <readline/history.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
+pid_t pid;
 
 int main(int argc, char* agrv[]){ 
     remove("./history.txt");
-    signal(SIGINT, control_c_handler);
-    signal(SIGTSTP, control_z_handler);
     while (1){
         char **command_list;
         char *userInput[100];
@@ -24,19 +34,17 @@ int main(int argc, char* agrv[]){
         char *input_string = malloc(100);
         strcpy(input_string,userInput);
         command_list = get_input(userInput);
-        if(strcmp(userInput, "history")==0){
+        if(strcmp(userInput, "history")==0){//handile histroy input
             store_history(userInput);
             history();
-    }     
-        else if(strcmp(userInput, "redirect")==0){
-            store_history(userInput);
-            redirect();
-        }
+        }  
+       
         else{
             if (get_command(command_list[0])==NULL)
                 printf("%s\n", "Command not found");
             else{
                 command_list[0] = get_command(command_list[0]);
+                
                 run_command(command_list[0], command_list);
                 }
             } 
@@ -83,7 +91,6 @@ char **get_input(char *input) {
     int index = 0;
     parsed = strtok(input, separator);
     while (parsed != NULL) {
-        printf("%s\n", parsed);
         command_list[index] = parsed;
         index++;
         parsed = strtok(NULL, separator);
@@ -92,17 +99,24 @@ char **get_input(char *input) {
     return command_list;
 }
 
-void run_command(char* command, char** command_list){
-    pid_t pid, wpid;
+pid_t run_command(char* command, char** command_list){
+    pid_t wpid;
     int status;
     pid = fork();
     if(pid==0){
-        execvp(command, command_list);
+        if(is_redirect(command_list)){
+            printf("Implement ment redirect\n");
+            }
+        execvp(command_list[0], command_list);
     }
     else{
         wpid = waitpid(pid, &status, WUNTRACED);
+        signal(SIGINT, control_c_handler);
+        signal(SIGTSTP, control_z_handler);
         }   
+        return pid;
     } 
+    
 
 void history( ){
       FILE *fp = fopen("history.txt", "r");
@@ -117,20 +131,28 @@ void history( ){
      fclose(fp);
 }
 
-void redirect(char* userInput){
-    char** command_list = get_input(userInput);
-    char* final_command = get_command(command_list[0]);
-    
-    printf("%s\n", "redirect");
+bool is_redirect(char** command_list){
+    bool found = false;
+    char *redirect_indicator;
+    int index = 0;
+    char* command  = command_list[index];
+    while(command != NULL){
+        redirect_indicator =strchr(command, '>');
+        if (redirect_indicator!=NULL){
+            found = true;
+        } 
+        index++;
+        command  = command_list[index];
+    }
+    return found;  
 }
 
 void control_c_handler(int dummy){
-    printf("\n%s","Lin's shell>>");
+    kill(pid, SIGTERM);
 }
 
 void control_z_handler(int dummy){
-    printf("%s\n", "Contolz hit");
-
+        kill(pid, SIGTSTP);
 }
 
 void store_history(char* user_command){
