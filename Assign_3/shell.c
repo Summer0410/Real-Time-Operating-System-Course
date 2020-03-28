@@ -111,6 +111,7 @@ pid_t run_command(char* command, char** command_list){
     }
     else{
         wpid = waitpid(pid, &status, WUNTRACED);
+        pid = 0;
         signal(SIGINT, control_c_handler);
         signal(SIGTSTP, control_z_handler);
         }   
@@ -152,7 +153,7 @@ void control_c_handler(int dummy){
 }
 
 void control_z_handler(int dummy){
-        kill(pid, SIGTSTP);
+    kill(pid, SIGTSTP);
 }
 
 void store_history(char* user_command){
